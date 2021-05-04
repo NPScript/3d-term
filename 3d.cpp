@@ -1,4 +1,4 @@
-#include <curses.h>
+#include <ncurses.h>
 #include <array>
 #include <math.h>
 #include <iostream>
@@ -7,7 +7,7 @@
 const double PI = 3.141592653589793238463;
 #define NULL_VECTOR Vector<3>({0, 0, 0})
 
-std::array<char, 10> depth = {'.', '.', '.', 'c', 'o', 'e', 's', '0', 'O', '@'};
+std::array<char[4], 3> depth = {"‧", "·", "•"};
 
 template<unsigned D>
 class Vector {
@@ -128,11 +128,16 @@ void print_vector(Vector<3> & vec) {
 	projection = proj * vec;
 	projection[1] *= -1;
 	projection += zero;
-	char p;
+	char * p = depth[1];
 
-	p = depth[vec[2] / 5 + 5];
+	if (vec[2] > 5)
+		p = depth[2];
+	else if (vec[2] < -5)
+		p = depth[1];
+
+	attrset(COLOR_PAIR(vec[2] / 2 + 11));
 	
-	mvprintw((int) projection[1], (int) projection[0], "%c", p);
+	mvprintw((int) projection[1], (int) projection[0], "%s", p);
 }
 
 void draw_line(Vector<3> from, Vector<3> to) {
@@ -216,9 +221,105 @@ void draw_cube(double side) {
 	draw_line(line.from, line.to);
 }
 
+void draw_my_object() {
+	draw_cube(20);
+	struct Line line;
+
+	line.from = Vector<3>({-7.5, -7.5, 10});
+	line.to = Vector<3>({7.5, -7.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({-7.5, -2.5, 10});
+	line.to = Vector<3>({7.5, -2.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({-7.5, -7.5, 10});
+	line.to = Vector<3>({-7.5, -2.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({7.5, -7.5, 10});
+	line.to = Vector<3>({7.5, -2.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({-7.5, 7.5, 10});
+	line.to = Vector<3>({-7.5, 2.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({-2.5, 7.5, 10});
+	line.to = Vector<3>({-2.5, 2.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({-7.5, 7.5, 10});
+	line.to = Vector<3>({-2.5, 7.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({-7.5, 2.5, 10});
+	line.to = Vector<3>({-2.5, 2.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({7.5, 7.5, 10});
+	line.to = Vector<3>({7.5, 2.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({2.5, 7.5, 10});
+	line.to = Vector<3>({2.5, 2.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({7.5, 7.5, 10});
+	line.to = Vector<3>({2.5, 7.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({7.5, 2.5, 10});
+	line.to = Vector<3>({2.5, 2.5, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({-10, 10, 10});
+	line.to = Vector<3>({0, 15, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({10, 10, 10});
+	line.to = Vector<3>({0, 15, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({-10, 10, -10});
+	line.to = Vector<3>({0, 15, -10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({10, 10, -10});
+	line.to = Vector<3>({0, 15, -10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+
+	line.from = Vector<3>({0, 15, -10});
+	line.to = Vector<3>({0, 15, 10});
+	line = line * rot;
+	draw_line(line.from, line.to);
+}
+
 int main() {
+	setlocale(LC_ALL, "");
 	initscr();
 	curs_set(0);
+	start_color();
+
+	for (int i = 0; i < 20; ++i) {
+		init_pair(i + 1, 234 + i, 0);
+	}
 	
 	int x, y;
 	getmaxyx(stdscr, y, x);
@@ -249,7 +350,7 @@ int main() {
 		rot[2][1] = 0;
 		rot[2][2] = -cos(PI / 64 * k);
 
-		draw_cube(20);
+		draw_my_object();
 
 		refresh();
 		usleep(50000);
